@@ -1,0 +1,34 @@
+# Django #
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media
+
+# If your build process includes static files
+/staticfiles
+/static
+
+# Virtual environment #
+venv/
+ENV/
+env/
+.venv/
+
+# IDEs #
+.vscode/
+.idea/
+*.swp
+
+# OS files #
+.DS_Store
+Thumbs.db
+
+# Python #
+*.py[cod]
+*$py.class
+
+# Migrations (optionnel si tu veux les ignorer) #
+*/migrations/__pycache__/
+*/migrations/*.py
