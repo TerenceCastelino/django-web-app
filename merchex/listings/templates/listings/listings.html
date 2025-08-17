@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Listings</title>
+  </head>
+  <body>
+    <h1>Listings</h1>
+    <ul>
+      {% for listing in listings %}
+      <li>{{ listing.title }}</li>
+      {% empty %}
+      <li>Aucun élément pour le moment.</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
