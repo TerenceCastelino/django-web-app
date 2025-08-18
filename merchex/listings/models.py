@@ -63,5 +63,7 @@ class Listing(models.Model):
         default=Type.MISC
     )
 
+    band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
+
     def __str__(self):
         return f"{self.title} ({self.get_type_display()})"
