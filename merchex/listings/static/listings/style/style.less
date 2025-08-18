@@ -1,0 +1,32 @@
+@main-bg: #f4f4f4;
+@header-bg: #333;
+@header-color: white;
+@card-bg: white;
+
+body {
+  font-family: Arial, sans-serif;
+  background: @main-bg;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: @header-bg;
+  color: @header-color;
+  padding: 1rem;
+
+  nav {
+    a {
+      color: @header-color;
+      margin-right: 1rem;
+      text-decoration: none;
+    }
+  }
+}
+
+main {
+  padding: 2rem;
+  background: @card-bg;
+  margin: 1rem;
+  border-radius: 8px;
+}

@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Merchex</title>
+    <link rel="stylesheet" href="{% static 'listings/style/style.css' %}" />
+  </head>
+  <body>
+    <header>
+      <h1>Merchex 🎶</h1>
+      <nav>
+        <a href="{% url 'hello' %}">Hello</a> |
+        <a href="{% url 'listings' %}">Listings</a> |
+        <a href="{% url 'about' %}">À propos</a> |
+        <a href="{% url 'contact' %}">Contact</a>
+      </nav>
+    </header>
+
+    <main>{% block content %}{% endblock %}</main>
+
+    <footer>
+      <p>&copy; 2025 Merchex</p>
+    </footer>
+  </body>
+</html>
