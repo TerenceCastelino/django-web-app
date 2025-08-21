@@ -205,3 +205,17 @@ def band_update(request: HttpRequest, id: int) -> HttpResponse:
         form = BandForm(instance=band)
 
     return render(request, "listings/band_update.html", {"form": form})
+
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# --- NEW: detail view ---
+def listing_detail(request, id):
+    """
+    EN: Display details of a single Listing by id. 404 if not found.
+    FR : Afficher les détails d'une annonce par id. 404 si non trouvée.
+    """
+    listing = get_object_or_404(Listing, id=id)  # EN: safer retrieval / FR : récupération plus sûre
+    return render(request, "listings/listing_detail.html", {"listing": listing})
+
+

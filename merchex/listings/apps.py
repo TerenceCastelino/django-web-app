@@ -5,7 +5,7 @@ EN: App configuration for the "listings" Django app. Bilingual comments (EN/FR).
 FR : Configuration de l'application Django "listings". Commentaires bilingues (EN/FR).
 """
 
-from __future__ import annotations
+# from __future__ import annotations
 
 # EN: Import Django's AppConfig base class
 # FR : Importation de la classe de base AppConfig de Django

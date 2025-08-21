@@ -1,10 +1,12 @@
-{% extends "listings/base.html" %} {% block content %}
-<h2>Listings</h2>
+{% extends 'listings/base.html' %} {% block content %}
 <ul>
-  {% for listing in listings %}
-  <li>{{ listing }}</li>
+  {% for item in listings %}
+  <li>
+    <a href="{% url 'listing_detail' id=item.id %}">{{ item.title }}</a>
+    — {{ item.get_type_display }}
+  </li>
   {% empty %}
-  <li>Aucun listing pour l’instant.</li>
+  <li>No listings yet.</li>
   {% endfor %}
 </ul>
 {% endblock %}

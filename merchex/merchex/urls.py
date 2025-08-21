@@ -56,6 +56,10 @@ urlpatterns = [
     # FR : Créer une nouvelle annonce
     path("listings/add/", views.listing_create, name="listing_create"),
 
+    # EN: Detail page for a single listing (lookup by id, required argument)
+    # FR : Page de détail pour une annonce (recherche par id, argument requis)
+    path("listings/<int:id>/", views.listing_detail, name="listing_detail"),
+
     # -----------------------------
     # Static pages / Pages statiques
     # -----------------------------
