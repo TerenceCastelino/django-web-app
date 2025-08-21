@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  background: #f4f4f4;
+  background: white;
   margin: 0;
   padding: 0;
 }
@@ -14,9 +14,40 @@ header nav a {
   margin-right: 1rem;
   text-decoration: none;
 }
+header nav a:hover {
+  color: #007BFF;
+  text-decoration: underline;
+}
+header nav a:active {
+  color: #0056b3;
+}
+header nav a:visited {
+  color: white;
+}
 main {
   padding: 2rem;
   background: white;
   margin: 1rem;
   border-radius: 8px;
+}
+main .errorlist {
+  margin-bottom: -10px;
+  color: red;
+  font-size: 0.9rem;
+  list-style: none;
+  padding: 0;
+}
+main a {
+  color: #333;
+  text-decoration: none;
+}
+main a:hover {
+  color: #007BFF;
+  text-decoration: underline;
+}
+main a:active {
+  color: #0056b3;
+}
+main a:visited {
+  color: #333;
 }

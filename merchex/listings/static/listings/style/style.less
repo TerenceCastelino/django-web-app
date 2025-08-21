@@ -2,10 +2,13 @@
 @header-bg: #333;
 @header-color: white;
 @card-bg: white;
+@link-color: #333;
+@link-hover: #007BFF;
+@link-active: #0056b3;
 
 body {
   font-family: Arial, sans-serif;
-  background: @main-bg;
+  background: @card-bg;
   margin: 0;
   padding: 0;
 }
@@ -20,6 +23,17 @@ header {
       color: @header-color;
       margin-right: 1rem;
       text-decoration: none;
+
+      &:hover {
+        color: @link-hover;
+        text-decoration: underline;
+      }
+      &:active {
+        color: @link-active;
+      }
+      &:visited {
+        color: @header-color; // évite le violet par défaut
+      }
     }
   }
 }
@@ -29,4 +43,29 @@ main {
   background: @card-bg;
   margin: 1rem;
   border-radius: 8px;
+
+  // Style des erreurs Django
+  .errorlist {
+    margin-bottom: -10px;
+    color: red;        // texte rouge pour être bien visible
+    font-size: 0.9rem; // un peu plus petit
+    list-style: none;  // supprime les puces
+    padding: 0;
+  }
+
+  a {
+    color: @link-color;
+    text-decoration: none;
+
+    &:hover {
+      color: @link-hover;
+      text-decoration: underline;
+    }
+    &:active {
+      color: @link-active;
+    }
+    &:visited {
+      color: @link-color; // évite violet après clic
+    }
+  }
 }

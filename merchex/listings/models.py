@@ -33,7 +33,6 @@ class Band(models.Model):
     def __str__(self):
         return f"{self.name} ({self.year_formed})"
 
-
 class Listing(models.Model):
     class Type(models.TextChoices):
         RECORDS = 'R', 'Records'
