@@ -71,4 +71,8 @@ urlpatterns = [
     # EN: Contact form page
     # FR : Page de contact
     path("contact-us/", views.contact, name="contact"),
+
+
+    path("listings/<int:id>/change/", views.listing_update, name="listing_update"),
 ]
+

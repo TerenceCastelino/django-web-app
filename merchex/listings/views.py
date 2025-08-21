@@ -219,3 +219,19 @@ def listing_detail(request, id):
     return render(request, "listings/listing_detail.html", {"listing": listing})
 
 
+def listing_update(request, id):
+    """
+    EN: Update an existing Listing by id. On success, redirect to its detail page.
+    FR : Met à jour une annonce existante par id. En cas de succès, redirige vers sa page de détail.
+    """
+    listing = get_object_or_404(Listing, id=id)
+
+    if request.method == "POST":
+        form = ListingForm(request.POST, instance=listing)
+        if form.is_valid():
+            form.save()
+            return redirect("listing_detail", id=listing.id)
+    else:
+        form = ListingForm(instance=listing)
+
+    return render(request, "listings/listing_update.html", {"form": form})
