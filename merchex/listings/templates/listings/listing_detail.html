@@ -26,4 +26,5 @@
 {% endif %}
 
 <p><a href="{% url 'listings' %}">← Back to listings</a></p>
+<p><a href="{% url 'listing_delete' id=listing.id %}">← Suprimer</a></p>
 {% endblock %}

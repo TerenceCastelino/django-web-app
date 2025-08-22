@@ -74,5 +74,7 @@ urlpatterns = [
 
 
     path("listings/<int:id>/change/", views.listing_update, name="listing_update"),
+    path("bands/<int:id>/delete/", views.band_delete, name="band-delete"),
+    path("listings/<int:id>/delete/", views.listing_delete, name="listing_delete"),
 ]
 

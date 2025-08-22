@@ -14,5 +14,6 @@
 <p>{{ band.biography }}</p>
 
 <a href="{% url 'band-update' band.id %}">[modifier]</a>
+<a href="{% url 'band-delete' id=band.id %}">Supprimer ce groupe</a>
 
 {% endblock %}
