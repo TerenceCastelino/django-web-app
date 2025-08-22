@@ -5,9 +5,6 @@ FR : Vues Django propres et commentées pour l'application "listings". Tous les 
 
 from __future__ import annotations
 
-# EN: Standard library imports (none needed here)
-# FR : Importations de la bibliothèque standard (aucune nécessaire ici)
-
 # EN: Django imports
 # FR : Importations Django
 from django.core.mail import send_mail
@@ -20,23 +17,214 @@ from listings.forms import BandForm, ContactUsForm, ListingForm
 from listings.models import Band, Listing
 
 
-# ==========================
-#  Contact view / Vue contact
-# ==========================
+# ==============================
+#           BAND (CRUD)
+# ==============================
+
+def band_create(request: HttpRequest) -> HttpResponse:
+    """
+    FR : Crée un nouveau Band et redirige vers son détail en cas de succès.
+         Préconditions : méthode POST avec données valides (BandForm). Retour : HttpResponse (formulaire) ou redirection.
+         Erreurs : validation formulaire (affiche le formulaire avec erreurs).
+    EN : Create a new Band and redirect to its detail on success.
+         Preconditions: POST with valid data (BandForm). Returns: HttpResponse (form) or redirect.
+         Errors: form validation errors (form re-rendered).
+    """
+    if request.method == "POST":
+        form = BandForm(request.POST)  # EN: bind POST data / FR : lier données POST
+        if form.is_valid():
+            band = form.save()  # EN/FR: persist instance
+            return redirect("band-detail", id=band.id)  # EN: URL name used as provided / FR : nom d'URL tel quel
+    else:
+        form = BandForm()  # EN: empty form / FR : formulaire vide
+
+    return render(request, "listings/band_create.html", {"form": form})
+
+
+def band_list(request: HttpRequest) -> HttpResponse:
+    """
+    FR : Affiche la liste de tous les groupes.
+         Préconditions : aucune. Retour : HttpResponse avec contexte {"bands"}.
+         Erreurs : aucune (penser à la pagination si gros volume).
+    EN : Display all bands.
+         Preconditions: none. Returns: HttpResponse with {"bands"}.
+         Errors: none (consider pagination for large datasets).
+    """
+    bands = Band.objects.all()  # EN: could paginate / FR : pagination possible
+    return render(request, "listings/band_list.html", {"bands": bands})
+
+
+def band_detail(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    FR : Affiche les détails d'un groupe par id (404 si absent).
+         Préconditions : id valide. Retour : HttpResponse avec contexte {"band"}.
+         Erreurs : 404 si non trouvé.
+    EN : Show a single band's details by id (404 if missing).
+         Preconditions: valid id. Returns: HttpResponse with {"band"}.
+         Errors: 404 when not found.
+    """
+    band = get_object_or_404(Band, id=id)  # EN/FR: safer retrieval (404 on miss)
+    return render(request, "listings/band_detail.html", {"band": band})
+
+
+def band_update(request: HttpRequest, id: int) -> HttpResponse:
+    """
+    FR : Met à jour un Band existant et redirige vers son détail.
+         Préconditions : id existant, POST avec données valides. Retour : HttpResponse ou redirection.
+         Erreurs : 404 si id invalide ; validation formulaire sinon.
+    EN : Update an existing Band and redirect to its detail.
+         Preconditions: existing id, POST with valid data. Returns: HttpResponse or redirect.
+         Errors: 404 if invalid id; form validation otherwise.
+    """
+    band = get_object_or_404(Band, id=id)
+
+    if request.method == "POST":
+        form = BandForm(request.POST, instance=band)
+        if form.is_valid():
+            form.save()
+            return redirect("band-detail", id=band.id)
+    else:
+        form = BandForm(instance=band)  # EN: pre-filled / FR : pré-rempli
+
+    return render(request, "listings/band_update.html", {"form": form})
+
+
+def band_delete(request, id):
+    """
+    FR : Supprime un Band après confirmation (POST), sinon affiche la page de confirmation.
+         Préconditions : id existant. Retour : HttpResponse ou redirection vers la liste des groupes.
+         Erreurs : Band.DoesNotExist si id invalide (non interceptée ici).
+    EN : Delete a Band after POST confirmation; otherwise renders confirmation.
+         Preconditions: existing id. Returns: HttpResponse or redirect to bands list.
+         Errors: Band.DoesNotExist if invalid id (not handled here).
+    """
+    band = Band.objects.get(id=id)  # EN: used for both GET and POST / FR : utilisé pour GET et POST
+
+    if request.method == 'POST':
+        band.delete()
+        return redirect('bands')  # EN: as provided / FR : tel quel
+
+    return render(request, 'listings/band_delete.html', {'band': band})
+
+
+# ===============================
+#          LISTING (CRUD)
+# ===============================
+
+def listing_create(request: HttpRequest) -> HttpResponse:
+    """
+    FR : Crée une nouvelle annonce et redirige vers la liste (ou autre vue si souhaité).
+         Préconditions : POST avec données valides (ListingForm). Retour : HttpResponse ou redirection.
+         Erreurs : validation formulaire (ré-affichage avec erreurs).
+    EN : Create a new Listing and redirect to the listings list (or a detail view if desired).
+         Preconditions: POST with valid data (ListingForm). Returns: HttpResponse or redirect.
+         Errors: form validation errors (re-rendered).
+    """
+    if request.method == "POST":
+        form = ListingForm(request.POST)
+        if form.is_valid():
+            listing = form.save()
+            return redirect("listings")  # EN/FR: route name kept as provided
+    else:
+        form = ListingForm()
+
+    return render(request, "listings/listing_create.html", {"form": form})
+
+
+def listings(request: HttpRequest) -> HttpResponse:
+    """
+    FR : Affiche toutes les annonces.
+         Préconditions : aucune. Retour : HttpResponse avec contexte {"listings"}.
+         Erreurs : aucune (penser pagination/tri).
+    EN : Display all listings.
+         Preconditions: none. Returns: HttpResponse with {"listings"}.
+         Errors: none (consider pagination/sorting).
+    """
+    items = Listing.objects.all()
+    return render(request, "listings/listings.html", {"listings": items})
+
+
+def listing_detail(request, id):
+    """
+    FR : Affiche le détail d'une annonce (404 si absente).
+         Préconditions : id valide. Retour : HttpResponse avec contexte {"listing"}.
+         Erreurs : 404 si non trouvée.
+    EN : Show a single listing (404 if missing).
+         Preconditions: valid id. Returns: HttpResponse with {"listing"}.
+         Errors: 404 when not found.
+    """
+    listing = get_object_or_404(Listing, id=id)  # EN: safer retrieval / FR : récupération plus sûre
+    return render(request, "listings/listing_detail.html", {"listing": listing})
+
+
+def listing_update(request, id):
+    """
+    FR : Met à jour une annonce existante et redirige vers son détail.
+         Préconditions : id existant, POST valide. Retour : HttpResponse ou redirection.
+         Erreurs : 404 si id invalide ; erreurs de formulaire sinon.
+    EN : Update an existing Listing and redirect to its detail.
+         Preconditions: existing id, valid POST. Returns: HttpResponse or redirect.
+         Errors: 404 if invalid id; form errors otherwise.
+    """
+    listing = get_object_or_404(Listing, id=id)
+
+    if request.method == "POST":
+        form = ListingForm(request.POST, instance=listing)
+        if form.is_valid():
+            form.save()
+            return redirect("listing_detail", id=listing.id)  # EN/FR: name with underscore kept
+    else:
+        form = ListingForm(instance=listing)
+
+    return render(request, "listings/listing_update.html", {"form": form})
+
+
+def listing_delete(request, id):
+    """
+    FR : Supprime une annonce après confirmation (POST), sinon affiche la confirmation.
+         Préconditions : id existant. Retour : HttpResponse ou redirection vers la liste des annonces.
+         Erreurs : 404 si id invalide.
+    EN : Delete a listing after POST confirmation; otherwise render the confirmation.
+         Preconditions: existing id. Returns: HttpResponse or redirect to listings list.
+         Errors: 404 if invalid id.
+    """
+    listing = get_object_or_404(Listing, id=id)
+
+    if request.method == "POST":
+        listing.delete()
+        return redirect("listings")  # ← list route name kept
+
+    return render(request, "listings/listing_delete.html", {"listing": listing})
+
+
+# ==============================
+#          PAGES / DIVERS
+# ==============================
+
+def about(request: HttpRequest) -> HttpResponse:
+    """
+    FR : Page statique « À propos ».
+         Préconditions : aucune. Retour : HttpResponse simple.
+         Erreurs : aucune.
+    EN : Static "About" page.
+         Preconditions: none. Returns: plain HttpResponse.
+         Errors: none.
+    """
+    return render(request, "listings/about.html")
+
 
 def contact(request: HttpRequest) -> HttpResponse:
     """
-    EN: Handle the contact form: display on GET, validate and send email on POST.
-    FR : Gère le formulaire de contact : affichage en GET, validation et envoi d'email en POST.
+    FR : Gère le formulaire de contact : affichage en GET, validation + envoi d'email en POST.
+         Préconditions : configuration d'email valide (Django). Retour : HttpResponse ou redirection vers la liste des groupes.
+         Erreurs : erreurs de formulaire ; erreurs d'envoi email si configuration invalide.
+    EN : Handle the contact form: show on GET, validate + send email on POST.
+         Preconditions: valid email backend configuration. Returns: HttpResponse or redirect to bands list.
+         Errors: form errors; email send failures if misconfigured.
     """
     if request.method == "POST":
-        # EN: Bind POST data to the form
-        # FR : Lier les données POST au formulaire
         form = ContactUsForm(request.POST)
-
         if form.is_valid():
-            # EN: Send the email using validated/cleaned data
-            # FR : Envoyer l'email en utilisant les données validées/nettoyées
             send_mail(
                 subject=(
                     f"Message from {form.cleaned_data['name'] or 'anonyme'} "
@@ -46,219 +234,8 @@ def contact(request: HttpRequest) -> HttpResponse:
                 from_email=form.cleaned_data["email"],
                 recipient_list=["admin@merchex.xyz"],
             )
-            # EN: After success, redirect to the bands list page
-            # FR : Après succès, rediriger vers la page de liste des groupes
-            return redirect("bands")
+            return redirect("bands")  # EN/FR: as provided
     else:
-        # EN: GET request ⇒ instantiate an empty form
-        # FR : Requête GET ⇒ instancier un formulaire vide
         form = ContactUsForm()
 
-    # EN: Render the contact template with the form (bound or unbound)
-    # FR : Rendre le template de contact avec le formulaire (lié ou non)
     return render(request, "listings/contact.html", {"form": form})
-
-
-# ==============================
-#  Bands list / Liste des groupes
-# ==============================
-
-def band_list(request: HttpRequest) -> HttpResponse:
-    """
-    EN: Display all bands.
-    FR : Affiche tous les groupes.
-    """
-    # EN: Query all Band instances (consider pagination for large datasets)
-    # FR : Récupérer toutes les instances Band (penser à la pagination pour de gros volumes)
-    bands = Band.objects.all()
-
-    # EN: Render the list template with the queryset
-    # FR : Rendre le template de liste avec le queryset
-    return render(request, "listings/band_list.html", {"bands": bands})
-
-
-# ======================
-#  About view / À propos
-# ======================
-
-def about(request: HttpRequest) -> HttpResponse:
-    """
-    EN: Static "About us" page.
-    FR : Page statique "À propos".
-    """
-    return render(request, "listings/about.html")
-
-
-# ========================================
-#  Listings list / Liste des annonces
-# ========================================
-
-def listings(request: HttpRequest) -> HttpResponse:
-    """
-    EN: Display all listings.
-    FR : Affiche toutes les annonces.
-    """
-    # EN: Query all Listing instances
-    # FR : Récupérer toutes les instances Listing
-    items = Listing.objects.all()
-
-    return render(request, "listings/listings.html", {"listings": items})
-
-
-# ==============================
-#  Band detail / Détails d'un groupe
-# ==============================
-
-def band_detail(request: HttpRequest, id: int) -> HttpResponse:
-    """
-    EN: Display details for a single band by id. 404 if not found.
-    FR : Affiche les détails d'un groupe par id. 404 si non trouvé.
-    """
-    # EN: Safer than Band.objects.get(id=id) ⇒ raises 404 automatically
-    # FR : Plus sûr que Band.objects.get(id=id) ⇒ lève 404 automatiquement
-    band = get_object_or_404(Band, id=id)
-
-    return render(request, "listings/band_detail.html", {"band": band})
-
-
-# ============================
-#  Band create / Création groupe
-# ============================
-
-def band_create(request: HttpRequest) -> HttpResponse:
-    """
-    EN: Create a new Band. On success, redirect to its detail page.
-    FR : Crée un nouveau Band. En cas de succès, redirige vers sa page de détails.
-    """
-    if request.method == "POST":
-        # EN: Bind POST data to the form
-        # FR : Lier les données POST au formulaire
-        form = BandForm(request.POST)
-        if form.is_valid():
-            # EN: Save and get the newly created band instance
-            # FR : Sauvegarder et récupérer l'instance nouvellement créée
-            band = form.save()
-            # EN: Redirect to the band detail page using URL name 'band-detail'
-            # FR : Rediriger vers la page de détail en utilisant le nom d'URL 'band-detail'
-            return redirect("band-detail", id=band.id)
-    else:
-        # EN: Render an empty form on GET
-        # FR : Rendre un formulaire vide en GET
-        form = BandForm()
-
-    return render(request, "listings/band_create.html", {"form": form})
-
-
-# =====================================
-#  Listing create / Création d'annonce
-# =====================================
-
-def listing_create(request: HttpRequest) -> HttpResponse:
-    """
-    EN: Create a new Listing. On success, redirect to the listings list.
-    FR : Crée une nouvelle annonce. En cas de succès, redirige vers la liste des annonces.
-    """
-    if request.method == "POST":
-        # EN: Bind POST data to the form
-        # FR : Lier les données POST au formulaire
-        form = ListingForm(request.POST)
-        if form.is_valid():
-            # EN: Save the listing; you could also redirect to a detail view if available
-            # FR : Sauvegarder l'annonce ; on peut aussi rediriger vers une page de détail si elle existe
-            listing = form.save()
-            return redirect("listings")
-    else:
-        # EN: GET request ⇒ empty form
-        # FR : Requête GET ⇒ formulaire vide
-        form = ListingForm()
-
-    return render(request, "listings/listing_create.html", {"form": form})
-
-
-# ==================================
-#  Band update / Mise à jour groupe
-# ==================================
-
-def band_update(request: HttpRequest, id: int) -> HttpResponse:
-    """
-    EN: Update an existing Band by id. On success, redirect to its detail page.
-    FR : Met à jour un Band existant par id. En cas de succès, redirige vers sa page de détails.
-    """
-    # EN: Retrieve or 404 if not found
-    # FR : Récupérer ou lever 404 si absent
-    band = get_object_or_404(Band, id=id)
-
-    if request.method == "POST":
-        # EN: Bind POST data to the form with the instance to update
-        # FR : Lier les données POST au formulaire avec l'instance à mettre à jour
-        form = BandForm(request.POST, instance=band)
-        if form.is_valid():
-            # EN: Save changes to the existing band
-            # FR : Sauvegarder les modifications du groupe existant
-            form.save()
-            # EN: Redirect to the updated band's detail page
-            # FR : Rediriger vers la page de détail du groupe mis à jour
-            return redirect("band-detail", id=band.id)
-    else:
-        # EN: Pre-fill the form with the existing instance on GET
-        # FR : Pré-remplir le formulaire avec l'instance existante en GET
-        form = BandForm(instance=band)
-
-    return render(request, "listings/band_update.html", {"form": form})
-
-
-
-#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# --- NEW: detail view ---
-def listing_detail(request, id):
-    """
-    EN: Display details of a single Listing by id. 404 if not found.
-    FR : Afficher les détails d'une annonce par id. 404 si non trouvée.
-    """
-    listing = get_object_or_404(Listing, id=id)  # EN: safer retrieval / FR : récupération plus sûre
-    return render(request, "listings/listing_detail.html", {"listing": listing})
-
-
-def listing_update(request, id):
-    """
-    EN: Update an existing Listing by id. On success, redirect to its detail page.
-    FR : Met à jour une annonce existante par id. En cas de succès, redirige vers sa page de détail.
-    """
-    listing = get_object_or_404(Listing, id=id)
-
-    if request.method == "POST":
-        form = ListingForm(request.POST, instance=listing)
-        if form.is_valid():
-            form.save()
-            return redirect("listing_detail", id=listing.id)
-    else:
-        form = ListingForm(instance=listing)
-
-    return render(request, "listings/listing_update.html", {"form": form})
-
-
-def band_delete(request, id):
-    band = Band.objects.get(id=id)  # nécessaire pour GET et pour POST
-
-    if request.method == 'POST':
-        # supprimer le groupe de la base de données
-        band.delete()
-        # rediriger vers la liste des groupes
-        return redirect('bands')
-
-    # pas besoin de « else » ici. Si c'est une demande GET, continuez simplement
-
-    return render(request,
-                    'listings/band_delete.html',
-                    {'band': band})
-
-
-def listing_delete(request, id):
-    listing = get_object_or_404(Listing, id=id)
-
-    if request.method == "POST":
-        listing.delete()
-        return redirect("listings")  # ← name de la route liste (OK)
-
-    # GET : afficher la confirmation
-    return render(request, "listings/listing_delete.html", {"listing": listing})

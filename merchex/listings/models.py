@@ -16,8 +16,12 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # ===============================
 class Band(models.Model):
     """
-    EN: Represents a music band with genre, biography, and activity status.
-    FR : Représente un groupe de musique avec genre, biographie et statut d'activité.
+    FR : Représente un groupe de musique (genre, biographie, statut d'activité, site officiel).
+         Préconditions : aucune. Champs clés : name, genre, year_formed, active, official_page.
+         Erreurs : contraintes de validation (Min/Max sur year_formed, choix sur genre).
+    EN : Represents a music band (genre, bio, active status, official site).
+         Preconditions: none. Key fields: name, genre, year_formed, active, official_page.
+         Errors: validation constraints (Min/Max on year_formed, choices on genre).
     """
 
     # EN: Inner class for genre choices
@@ -33,20 +37,20 @@ class Band(models.Model):
     # FR : Nom du groupe (max 100 caractères)
     name = models.CharField(max_length=100)
 
-    # EN: Genre field with predefined choices (default = Hip-Hop)
-    # FR : Champ genre avec choix prédéfinis (par défaut = Hip-Hop)
+    # EN: Genre with predefined choices (default = Hip-Hop)
+    # FR : Genre avec choix prédéfinis (défaut = Hip-Hop)
     genre = models.CharField(
         choices=Genre.choices,
         max_length=5,
         default=Genre.HIP_HOP,
     )
 
-    # EN: Biography text (optional)
-    # FR : Texte de biographie (optionnel)
+    # EN: Short biography (optional)
+    # FR : Biographie courte (optionnelle)
     biography = models.CharField(max_length=1000, null=True, blank=True)
 
-    # EN: Year formed with validation constraints
-    # FR : Année de formation avec contraintes de validation
+    # EN: Year formed, validated within [1900, 2100]
+    # FR : Année de formation, validée dans [1900, 2100]
     year_formed = models.IntegerField(
         validators=[MinValueValidator(1900), MaxValueValidator(2100)],
         default=2000,
@@ -56,13 +60,15 @@ class Band(models.Model):
     # FR : Indique si le groupe est actuellement actif
     active = models.BooleanField(default=True)
 
-    # EN: Optional URL for the band's official website
-    # FR : URL facultative pour le site officiel du groupe
+    # EN: Optional official website
+    # FR : Site officiel (optionnel)
     official_page = models.URLField(null=True, blank=True)
 
     def __str__(self) -> str:
-        # EN: String representation = name + year formed
-        # FR : Représentation en chaîne = nom + année de formation
+        """
+        FR : Représentation lisible (admin, shell). Retour : « name (year_formed) ».
+        EN : Human-readable representation (admin, shell). Returns: "name (year_formed)".
+        """
         return f"{self.name} ({self.year_formed})"
 
 
@@ -71,32 +77,36 @@ class Band(models.Model):
 # ====================================
 class Listing(models.Model):
     """
-    EN: Represents a listing of merchandise items (records, posters, clothing, etc.).
-    FR : Représente une annonce d'articles de merchandising (disques, posters, vêtements, etc.).
+    FR : Représente une annonce de merchandising (disques, vêtements, posters, etc.).
+         Préconditions : aucune. Champs clés : title, description, sold, year, official_page, type, band.
+         Erreurs : contraintes de validation (Min/Max sur year, choix sur type).
+    EN : Represents a merchandise listing (records, clothing, posters, etc.).
+         Preconditions: none. Key fields: title, description, sold, year, official_page, type, band.
+         Errors: validation constraints (Min/Max on year, choices on type).
     """
 
-    # EN: Inner class for type choices
-    # FR : Classe interne pour les choix de type
+    # EN: Inner class for item type choices
+    # FR : Classe interne pour les choix de type d'article
     class Type(models.TextChoices):
         RECORDS = "R", "Records"
         CLOTHING = "C", "Clothing"
         POSTERS = "P", "Posters"
         MISC = "M", "Miscellaneous"
 
-    # EN: Title of the listing (max 100 chars)
-    # FR : Titre de l'annonce (max 100 caractères)
+    # EN: Title (max 100 chars)
+    # FR : Titre (max 100 caractères)
     title = models.CharField(max_length=100)
 
     # EN: Short description (max 400 chars)
     # FR : Courte description (max 400 caractères)
     description = models.CharField(max_length=400)
 
-    # EN: Whether the item has been sold
-    # FR : Indique si l'article est vendu
+    # EN: Whether the item has been sold (default True as provided)
+    # FR : Indique si l'article est vendu (défaut True, conservé tel quel)
     sold = models.BooleanField(default=True)
 
-    # EN: Year of the item (optional, with validation)
-    # FR : Année de l'article (optionnelle, avec validation)
+    # EN: Year of the item (optional; validated within [1800, 2100])
+    # FR : Année de l'article (optionnelle ; validée dans [1800, 2100])
     year = models.IntegerField(
         validators=[MinValueValidator(1800), MaxValueValidator(2100)],
         null=True,
@@ -107,7 +117,7 @@ class Listing(models.Model):
     # FR : Lien externe optionnel (ex. page produit)
     official_page = models.URLField(null=True, blank=True)
 
-    # EN: Type of item (records, clothing, etc.)
+    # EN: Item type (records, clothing, etc.)
     # FR : Type d'article (disques, vêtements, etc.)
     type = models.CharField(
         choices=Type.choices,
@@ -115,11 +125,13 @@ class Listing(models.Model):
         default=Type.MISC,
     )
 
-    # EN: Relation to a band (nullable, if band deleted → set null)
-    # FR : Relation avec un groupe (nullable, si groupe supprimé → set null)
+    # EN: Relation to a band (nullable; on band deletion set to NULL)
+    # FR : Relation avec un groupe (nullable ; en cas de suppression du groupe → NULL)
     band = models.ForeignKey(Band, null=True, on_delete=models.SET_NULL)
 
     def __str__(self) -> str:
-        # EN: String representation = title + human-readable type
-        # FR : Représentation en chaîne = titre + type lisible
+        """
+        FR : Représentation lisible (admin, shell). Retour : « title (type lisible) ».
+        EN : Human-readable representation (admin, shell). Returns: "title (human-readable type)".
+        """
         return f"{self.title} ({self.get_type_display()})"
